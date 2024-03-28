@@ -238,6 +238,7 @@ require('lazy').setup({
   'pocco81/auto-save.nvim',
   'tpope/vim-surround', -- Surround text with symbols
   'tpope/vim-fugitive',
+  'voldikss/vim-floaterm',
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -246,7 +247,6 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
-
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
@@ -268,40 +268,59 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
-  --
-  -- This is often very useful to both group configuration, as well as handle
-  -- lazy loading plugins that don't need to be loaded immediately at startup.
-  --
-  -- For example, in the following configuration, we use:
-  --  event = 'VimEnter'
-  --
-  -- which loads which-key before all the UI elements are loaded. Events can be
-  -- normal autocommands events (`:help autocmd-events`).
-  --
-  -- Then, because we use the `config` key, the configuration only runs
-  -- after the plugin has been loaded:
-  --  config = function() ... end
-
-  { -- Useful plugin to show you pending keybinds.
-    'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
-
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>e'] = { name = '[E]rrors', _ = 'which_key_ignore' },
-        ['<leader>q'] = { name = '[Q]uit', _ = 'which_key_ignore' },
-        ['<leader>g'] = { name = '[G]oto', _ = 'which_key_ignore' },
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    event = 'BufRead',
+    config = function()
+      require('ibl').setup {
+        indent = { char = '▏' },
       }
     end,
   },
+  -- nvim v0.8.0
+      {
+        'kdheepak/lazygit.nvim',
+        dependencies = {
+          'nvim-telescope/telescope.nvim',
+          'nvim-lua/plenary.nvim',
+        },
+        config = function()
+          require('telescope').load_extension 'lazygit'
+        end,
+      },
+    -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
+    --
+    -- This is often very useful to both group configuration, as well as handle
+    -- lazy loading plugins that don't need to be loaded immediately at startup.
+    --
+    -- For example, in the following configuration, we use:
+    --  event = 'VimEnter'
+    --
+    -- which loads which-key before all the UI elements are loaded. Events can be
+    -- normal autocommands events (`:help autocmd-events`).
+    --
+    -- Then, because we use the `config` key, the configuration only runs
+    -- after the plugin has been loaded:
+    --  config = function() ... end
+    { -- Useful plugin to show you pending keybinds.
+      'folke/which-key.nvim',
+      event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+      config = function() -- This is the function that runs, AFTER loading
+        require('which-key').setup()
+
+        -- Document existing key chains
+        require('which-key').register {
+          ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
+          ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+          ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+          ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+          ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+          ['<leader>e'] = { name = '[E]rrors', _ = 'which_key_ignore' },
+          ['<leader>q'] = { name = '[Q]uit', _ = 'which_key_ignore' },
+          ['<leader>g'] = { name = '[G]oto', _ = 'which_key_ignore' },
+        }
+      end,
+    },
 
   -- NOTE: Plugins can specify dependencies.
   --
@@ -435,12 +454,12 @@ require('lazy').setup({
     'github/copilot.vim',
     config = function()
       vim.keymap.set('n', '<leader>cs', ':Copilot<CR>', { desc = '[C]o-Pilot [S]uggest' })
-      vim.keymap.set('i', '<C-m>', '<Plug>(copilot-accept)')
-      vim.keymap.set('i', '<C-l>', '<Plug>(copilot-next)')
-      vim.keymap.set('i', '<C-h>', '<Plug>(copilot-previous)')
-      vim.keymap.set('i', '<C-M>', '<Plug>(copilot-accept-line)')
+      vim.keymap.set('i', '<C-m>', '<Plug>(copilot-accept)', { replace_keycodes = false })
+      vim.keymap.set('i', '<C-l>', '<Plug>(copilot-next)', { replace_keycodes = false })
+      vim.keymap.set('i', '<C-h>', '<Plug>(copilot-previous)', { replace_keycodes = false })
+      vim.keymap.set('i', '<C-M>', '<Plug>(copilot-accept-line)', { replace_keycodes = false })
       vim.g.copilot_no_tab_map = true
-      vim.keymap.set('i', '<Tab>', 'copilot#AcceptWord("<Tab>")', { silent = true, expr = true })
+      vim.keymap.set('i', '<Tab>', 'copilot#AcceptWord("<Tab>")', { silent = true, expr = true, replace_keycodes = false })
       vim.keymap.set('i', '<CR>', '<Plug>(copilot-dismiss)<CR>', { silent = true })
     end,
   },
