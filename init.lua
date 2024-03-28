@@ -1,3 +1,4 @@
+--
 --[[
 
 =====================================================================
@@ -167,8 +168,8 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>ee', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
+vim.keymap.set('n', '<leader>eq', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -192,6 +193,10 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+--my key binds for neovim builtins
+vim.keymap.set('n', '<leader>qq', '<cmd>q<CR>', { desc = '[Q]uit' })
+vim.keymap.set('n', '<leader>qc', '<cmd>conf qall<CR>', { desc = '[Q]uit all with [C]onformation' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -230,6 +235,7 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'pocco81/auto-save.nvim',
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -284,11 +290,14 @@ require('lazy').setup({
 
       -- Document existing key chains
       require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+        ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+        ['<leader>e'] = { name = '[E]rrors', _ = 'which_key_ignore' },
+        ['<leader>q'] = { name = '[Q]uit', _ = 'which_key_ignore' },
+        ['<leader>g'] = { name = '[G]oto', _ = 'which_key_ignore' },
       }
     end,
   },
@@ -421,6 +430,19 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'github/copilot.vim',
+    config = function()
+      vim.keymap.set('n', '<leader>cs', ':Copilot<CR>', { desc = '[C]o-Pilot [S]uggest' })
+      vim.keymap.set('i', '<C-m>', '<Plug>(copilot-accept)')
+      vim.keymap.set('i', '<C-l>', '<Plug>(copilot-next)')
+      vim.keymap.set('i', '<C-h>', '<Plug>(copilot-previous)')
+      vim.keymap.set('i', '<C-M>', '<Plug>(copilot-accept-line)')
+      vim.g.copilot_no_tab_map = true
+      vim.keymap.set('i', '<Tab>', 'copilot#AcceptWord("<Tab>")', { silent = true, expr = true })
+      vim.keymap.set('i', '<CR>', '<Plug>(copilot-dismiss)<CR>', { silent = true })
+    end,
+  },
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -428,8 +450,6 @@ require('lazy').setup({
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
-      'github/copilot.vim',
-      'pocco81/auto-save.nvim',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -512,7 +532,7 @@ require('lazy').setup({
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          map('<leader>ce', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap.
