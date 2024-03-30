@@ -1,4 +1,5 @@
 --
+--
 --[[
 
 =====================================================================
@@ -162,9 +163,24 @@ vim.opt.scrolloff = 15
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
--- my custom options
---
+-- remaps from english to finnish keyboard layout
 
+-- Remap '/' to 'ö' for search
+vim.api.nvim_set_keymap('n', 'ö', ':', { noremap = true })
+vim.api.nvim_set_keymap('x', 'ö', ':', { noremap = true })
+vim.api.nvim_set_keymap('n', 'Ö', '?', { noremap = true })
+vim.api.nvim_set_keymap('x', 'Ö', '?', { noremap = true })
+
+-- Remap '*' to 'ä' for word under cursor search
+vim.api.nvim_set_keymap('n', 'ä', '/', { noremap = true })
+vim.api.nvim_set_keymap('x', 'ä', '/', { noremap = true })
+vim.api.nvim_set_keymap('n', 'Ä', '?', { noremap = true })
+vim.api.nvim_set_keymap('x', 'Ä', '?', { noremap = true })
+
+-- Remap 'n' and 'N' to 'å' and 'Å' for next and previous search
+vim.api.nvim_set_keymap('n', 'å', 'n', { noremap = true })
+vim.api.nvim_set_keymap('n', 'Å', 'N', { noremap = true })
+vim.keymap.set('n', '<leader>ö', '<cmd>q<CR>', { desc = '[Q]uit' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
@@ -238,7 +254,7 @@ require('lazy').setup({
   'pocco81/auto-save.nvim',
   'tpope/vim-surround', -- Surround text with symbols
   'tpope/vim-fugitive',
-  'voldikss/vim-floaterm',
+  'dawsers/telescope-floaterm.nvim',
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -278,49 +294,77 @@ require('lazy').setup({
     end,
   },
   -- nvim v0.8.0
-      {
-        'kdheepak/lazygit.nvim',
-        dependencies = {
-          'nvim-telescope/telescope.nvim',
-          'nvim-lua/plenary.nvim',
-        },
-        config = function()
-          require('telescope').load_extension 'lazygit'
-        end,
-      },
-    -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
-    --
-    -- This is often very useful to both group configuration, as well as handle
-    -- lazy loading plugins that don't need to be loaded immediately at startup.
-    --
-    -- For example, in the following configuration, we use:
-    --  event = 'VimEnter'
-    --
-    -- which loads which-key before all the UI elements are loaded. Events can be
-    -- normal autocommands events (`:help autocmd-events`).
-    --
-    -- Then, because we use the `config` key, the configuration only runs
-    -- after the plugin has been loaded:
-    --  config = function() ... end
-    { -- Useful plugin to show you pending keybinds.
-      'folke/which-key.nvim',
-      event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-      config = function() -- This is the function that runs, AFTER loading
-        require('which-key').setup()
-
-        -- Document existing key chains
-        require('which-key').register {
-          ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
-          ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-          ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-          ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-          ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-          ['<leader>e'] = { name = '[E]rrors', _ = 'which_key_ignore' },
-          ['<leader>q'] = { name = '[Q]uit', _ = 'which_key_ignore' },
-          ['<leader>g'] = { name = '[G]oto', _ = 'which_key_ignore' },
-        }
-      end,
+  {
+    'kdheepak/lazygit.nvim',
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
     },
+
+    dependencies = {
+      'nvim-telescope/telescope.nvim',
+      'nvim-lua/plenary.nvim',
+    },
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    },
+
+    config = function()
+      require('telescope').load_extension 'lazygit'
+    end,
+  },
+
+  {
+    'voldikss/vim-floaterm',
+
+    keys = {
+      { '<leader>ff', '<cmd>FloatermNew<cr>', desc = 'New floating terminal instance' },
+      { '<leader>ft', '<cmd>FloatermToggle<cr>', desc = 'Toggle floating terminal instance' },
+      { '<leader>fn', '<cmd>FloatermNext<cr>', desc = 'Next floating terminal instance' },
+      { '<leader>fm', '<cmd>FloatermPrev<cr>', desc = 'Previous floating terminal instance' },
+      { '<leader>fk', '<cmd>FloatermKill<cr>', desc = 'Kill floating terminal instance' },
+      { '<leader>fd', '<cmd>Telescope floaterm<cr>', desc = 'Show floating terminal instance' },
+    },
+    --config = function() end,
+  },
+  -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
+  --
+  -- This is often very useful to both group configuration, as well as handle
+  -- lazy loading plugins that don't need to be loaded immediately at startup.
+  --
+  -- For example, in the following configuration, we use:
+  --  event = 'VimEnter'
+  --
+  -- which loads which-key before all the UI elements are loaded. Events can be
+  -- normal autocommands events (`:help autocmd-events`).
+  --
+  -- Then, because we use the `config` key, the configuration only runs
+  -- after the plugin has been loaded:
+  --  config = function() ... end
+  { -- Useful plugin to show you pending keybinds.
+    'folke/which-key.nvim',
+    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    config = function() -- This is the function that runs, AFTER loading
+      require('which-key').setup()
+
+      -- Document existing key chains
+      require('which-key').register {
+        ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
+        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+        ['<leader>e'] = { name = '[E]rrors', _ = 'which_key_ignore' },
+        ['<leader>q'] = { name = '[Q]uit', _ = 'which_key_ignore' },
+        ['<leader>g'] = { name = '[G]oto', _ = 'which_key_ignore' },
+        ['<leader>l'] = { name = '[L]azy Git', _ = 'which_key_ignore' },
+        ['<leader>f'] = { name = '[F]loating Terminal', _ = 'which_key_ignore' },
+      }
+    end,
+  },
 
   -- NOTE: Plugins can specify dependencies.
   --
@@ -395,6 +439,7 @@ require('lazy').setup({
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'floaterm')
 
       local function custom_buffers_command()
         require('telescope.builtin').buffers {
@@ -418,7 +463,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sj', '<C-w>v<C-w>l:Telescope jumplist<CR>', { noremap = true, silent = true, desc = '[S]earch [J]umplist in new Split' })
 
       -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
+      vim.keymap.set('n', '<leader>ä', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
         builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
           winblend = 10,
