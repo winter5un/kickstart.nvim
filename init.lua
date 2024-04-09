@@ -255,6 +255,8 @@ require('lazy').setup({
   'tpope/vim-surround', -- Surround text with symbols
   'tpope/vim-fugitive',
   'dawsers/telescope-floaterm.nvim',
+  'tamton-aquib/staline.nvim',
+
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -293,7 +295,90 @@ require('lazy').setup({
       }
     end,
   },
-  -- nvim v0.8.0
+  {
+    'stevearc/oil.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+  },
+  {
+    'mfussenegger/nvim-dap',
+    dependencies = {
+      { 'rcarriga/nvim-dap-ui' },
+      { 'theHamsta/nvim-dap-virtual-text' },
+      { 'nvim-telescope/telescope-dap.nvim' },
+      { 'jbyuki/one-small-step-for-vimkind' },
+      { 'nvim-neotest/nvim-nio' },
+      {
+        'mfussenegger/nvim-dap-python',
+        config = function()
+          local venvPythonPath = vim.fn.getcwd() .. '/.venv/bin/python'
+          require('dap-python').setup(venvPythonPath)
+          table.insert(require('dap').configurations.python, {
+            type = 'python',
+            request = 'launch',
+            name = 'A with args',
+            program = '${file}',
+            cwd = vim.fn.getcwd(),
+            --args = { 'tampere', '0' },
+          })
+        end,
+      },
+    },
+  -- stylua: ignore
+  keys = {
+    { "<leader>dR", function() require("dap").run_to_cursor() end, desc = "Run to Cursor", },
+    { "<leader>dE", function() require("dapui").eval(vim.fn.input "[Expression] > ") end, desc = "Evaluate Input", },
+    { "<leader>dC", function() require("dap").set_breakpoint(vim.fn.input "[Condition] > ") end, desc = "Conditional Breakpoint", },
+    { "<leader>dU", function() require("dapui").toggle() end, desc = "Toggle UI", },
+    { "<leader>db", function() require("dap").step_back() end, desc = "Step Back", },
+    { "<leader>dc", function() require("dap").continue() end, desc = "Continue", },
+    { "<leader>dd", function() require("dap").disconnect() end, desc = "Disconnect", },
+    { "<leader>de", function() require("dapui").eval() end, mode = {"n", "v"}, desc = "Evaluate", },
+    { "<leader>dg", function() require("dap").session() end, desc = "Get Session", },
+    { "<leader>dh", function() require("dap.ui.widgets").hover() end, desc = "Hover Variables", },
+    { "<leader>dS", function() require("dap.ui.widgets").scopes() end, desc = "Scopes", },
+    { "<leader>di", function() require("dap").step_into() end, desc = "Step Into", },
+    { "<leader>do", function() require("dap").step_over() end, desc = "Step Over", },
+    { "<leader>dp", function() require("dap").pause.toggle() end, desc = "Pause", },
+    { "<leader>dq", function() require("dap").close() end, desc = "Quit", },
+    { "<leader>dr", function() require("dap").repl.toggle() end, desc = "Toggle REPL", },
+    { "<leader>ds", function() require("dap").continue() end, desc = "Start", },
+    { "<leader>dt", function() require("dap").toggle_breakpoint() end, desc = "Toggle Breakpoint", },
+    { "<leader>dx", function() require("dap").terminate() end, desc = "Terminate", },
+    { "<leader>du", function() require("dap").step_out() end, desc = "Step Out", },
+  },
+    opts = {
+      setup = {
+        osv = function(_, _)
+          require('plugins.dap.lua').setup()
+        end,
+      },
+    },
+    config = function(plugin, opts)
+      require('nvim-dap-virtual-text').setup {
+        commented = true,
+      }
+
+      local dap, dapui = require 'dap', require 'dapui'
+      dapui.setup {}
+
+      dap.listeners.after.event_initialized['dapui_config'] = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated['dapui_config'] = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited['dapui_config'] = function()
+        dapui.close()
+      end
+
+      -- set up debugger
+      for k, _ in pairs(opts.setup) do
+        opts.setup[k](plugin, opts)
+      end
+    end,
+  },
   {
     'kdheepak/lazygit.nvim',
     cmd = {
@@ -303,7 +388,6 @@ require('lazy').setup({
       'LazyGitFilter',
       'LazyGitFilterCurrentFile',
     },
-
     dependencies = {
       'nvim-telescope/telescope.nvim',
       'nvim-lua/plenary.nvim',
@@ -353,7 +437,7 @@ require('lazy').setup({
       -- Document existing key chains
       require('which-key').register {
         ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+        ['<leader>b'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
@@ -362,6 +446,7 @@ require('lazy').setup({
         ['<leader>g'] = { name = '[G]oto', _ = 'which_key_ignore' },
         ['<leader>l'] = { name = '[L]azy Git', _ = 'which_key_ignore' },
         ['<leader>f'] = { name = '[F]loating Terminal', _ = 'which_key_ignore' },
+        ['<leader>d'] = { name = '[D]ap Debugging', _ = 'which_key_ignore' },
       }
     end,
   },
@@ -481,15 +566,17 @@ require('lazy').setup({
 
       -- It's also possible to pass additional configuration options.
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
-      vim.keymap.set('n', '<leader>s/', function()
+      vim.keymap.set('n', '<leader>sä', function()
         builtin.live_grep {
           grep_open_files = true,
           prompt_title = 'Live Grep in Open Files',
         }
-      end, { desc = '[S]earch [/] in Open Files' })
+      end, { desc = '[S]earch [ä] in Open Files' })
 
       -- Shortcut for searching your Neovim configuration files
       vim.keymap.set('n', '<leader>sn', function()
+        vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
+        vim.cmd [[execute 'wincmd l']]
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
     end,
@@ -585,7 +672,7 @@ require('lazy').setup({
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+          map('<leader>bs', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
