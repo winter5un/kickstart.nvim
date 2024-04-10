@@ -2,6 +2,12 @@
 --
 --[[
 
+  TODO list
+  fix copilot bindings
+  add windows leader bindings
+  change tabs to spaces
+
+
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
 =====================================================================
@@ -211,9 +217,10 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 --my key binds for neovim builtins
-vim.keymap.set('n', '<leader>qq', '<cmd>q<CR>', { desc = '[Q]uit' })
 vim.keymap.set('n', '<leader>qc', '<cmd>conf qall<CR>', { desc = '[Q]uit all with [C]onformation' })
-
+vim.keymap.set('n', '<leader>fg', '<cmd>!nohup nautilus --browser . & disown<CR>', { desc = '[F]loating Nautilus [G]ui' })
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -225,6 +232,16 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+vim.api.nvim_create_augroup('AutoFormat', {})
+
+vim.api.nvim_create_autocmd('BufWritePost', {
+  pattern = '*.py',
+  group = 'AutoFormat',
+  callback = function()
+    vim.cmd 'silent !black --quiet %'
+    vim.cmd 'edit'
   end,
 })
 
@@ -405,14 +422,22 @@ require('lazy').setup({
     'voldikss/vim-floaterm',
 
     keys = {
-      { '<leader>ff', '<cmd>FloatermNew<cr>', desc = 'New floating terminal instance' },
-      { '<leader>ft', '<cmd>FloatermToggle<cr>', desc = 'Toggle floating terminal instance' },
+      { '<leader>ft', '<cmd>FloatermNew<cr>', desc = 'New floating terminal instance' },
+      { '<leader>ff', '<cmd>FloatermToggle<cr>', desc = 'Toggle floating terminal instance' },
       { '<leader>fn', '<cmd>FloatermNext<cr>', desc = 'Next floating terminal instance' },
       { '<leader>fm', '<cmd>FloatermPrev<cr>', desc = 'Previous floating terminal instance' },
       { '<leader>fk', '<cmd>FloatermKill<cr>', desc = 'Kill floating terminal instance' },
       { '<leader>fd', '<cmd>Telescope floaterm<cr>', desc = 'Show floating terminal instance' },
     },
     --config = function() end,
+  },
+  {
+    'rbong/vim-flog',
+    lazy = true,
+    cmd = { 'Flog', 'Flogsplit', 'Floggit' },
+    dependencies = {
+      'tpope/vim-fugitive',
+    },
   },
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -538,6 +563,9 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sa', function()
+        builtin.find_files { hidden = true, no_ignore = true }
+      end, { desc = '[S]earch [A]ll Files' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -579,6 +607,12 @@ require('lazy').setup({
         vim.cmd [[execute 'wincmd l']]
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
+
+      vim.keymap.set('n', '<leader>sl', function()
+        vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
+        vim.cmd [[execute 'wincmd l']]
+        builtin.find_files {}
+      end, { desc = '[S]earch Fi[L]es in New Window' })
     end,
   },
 
@@ -586,11 +620,11 @@ require('lazy').setup({
     'github/copilot.vim',
     config = function()
       vim.keymap.set('n', '<leader>cs', ':Copilot<CR>', { desc = '[C]o-Pilot [S]uggest' })
+      vim.g.copilot_no_tab_map = true
       vim.keymap.set('i', '<C-m>', '<Plug>(copilot-accept)', { replace_keycodes = false })
       vim.keymap.set('i', '<C-l>', '<Plug>(copilot-next)', { replace_keycodes = false })
       vim.keymap.set('i', '<C-h>', '<Plug>(copilot-previous)', { replace_keycodes = false })
       vim.keymap.set('i', '<C-M>', '<Plug>(copilot-accept-line)', { replace_keycodes = false })
-      vim.g.copilot_no_tab_map = true
       vim.keymap.set('i', '<Tab>', 'copilot#AcceptWord("<Tab>")', { silent = true, expr = true, replace_keycodes = false })
       vim.keymap.set('i', '<CR>', '<Plug>(copilot-dismiss)<CR>', { silent = true })
     end,
