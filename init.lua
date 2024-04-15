@@ -1,12 +1,14 @@
 --
---
 --[[
 
   TODO list
   fix copilot bindings
   add windows leader bindings
   change tabs to spaces
-
+lua crashcourse
+redo config into multiple files potentially or at least clean up
+c/c++ debugging
+fix python debugging, it has duplicate entries for dap and pyright 
 
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
@@ -92,6 +94,7 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+require('custom.plugins').hello_world()
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -221,6 +224,17 @@ vim.keymap.set('n', '<leader>qc', '<cmd>conf qall<CR>', { desc = '[Q]uit all wit
 vim.keymap.set('n', '<leader>fg', '<cmd>!nohup nautilus --browser . & disown<CR>', { desc = '[F]loating Nautilus [G]ui' })
 vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
+-- these are for moving lines up and down in visual mode
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+vim.keymap.set('n', 'J', 'mzJ`z')
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
+vim.keymap.set('x', '<leader>p', [["_dP]]) --paste over visual selection without yanking
+vim.keymap.set('n', '<C-f>', '<cmd>silent !tmux neww tmux-sessionizer<CR>')
+vim.keymap.set('n', '<leader>rr', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = '[R]eplace [R]ecurring Text' })
+
+--
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -324,8 +338,14 @@ require('lazy').setup({
       { 'rcarriga/nvim-dap-ui' },
       { 'theHamsta/nvim-dap-virtual-text' },
       { 'nvim-telescope/telescope-dap.nvim' },
-      { 'jbyuki/one-small-step-for-vimkind' },
       { 'nvim-neotest/nvim-nio' },
+      {
+        'ldelossa/nvim-dap-projects',
+        config = function()
+          require('nvim-dap-projects').config_paths = { vim.fn.getcwd() .. '/.nvim/nvim-dap.lua' }
+          require('nvim-dap-projects').search_project_config()
+        end,
+      },
       {
         'mfussenegger/nvim-dap-python',
         config = function()
@@ -419,6 +439,13 @@ require('lazy').setup({
   },
 
   {
+    'eandrju/cellular-automaton.nvim',
+    keys = {
+      { '<leader>tr', '<cmd>CellularAutomaton make_it_rain<cr>', desc = 'Cellular Automaton make_it_rain' },
+      { '<leader>tt', '<cmd>CellularAutomaton game_of_life<cr>', desc = 'Cellular Automaton game_of_life' },
+    },
+  },
+  {
     'voldikss/vim-floaterm',
 
     keys = {
@@ -463,7 +490,7 @@ require('lazy').setup({
       require('which-key').register {
         ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
         ['<leader>b'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+        ['<leader>r'] = { name = '[R]eplace', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
         ['<leader>e'] = { name = '[E]rrors', _ = 'which_key_ignore' },
@@ -472,6 +499,7 @@ require('lazy').setup({
         ['<leader>l'] = { name = '[L]azy Git', _ = 'which_key_ignore' },
         ['<leader>f'] = { name = '[F]loating Terminal', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ap Debugging', _ = 'which_key_ignore' },
+        ['<leader>t'] = { name = '[T]emp Bindings', _ = 'which_key_ignore' },
       }
     end,
   },
@@ -833,7 +861,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = false, cpp = false }
         return {
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
