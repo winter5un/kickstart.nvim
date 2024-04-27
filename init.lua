@@ -327,9 +327,12 @@ require('lazy').setup({
   {
     'pocco81/auto-save.nvim',
     opts = {},
-    keys = {
-      vim.api.nvim_set_keymap('n', '<leader>tu', ':ASToggle<CR>', { desc = '[T]oggle [U]pdate on Save' }),
-    },
+    config = function()
+      require('auto-save').setup {
+        enabled = true,
+      }
+      vim.api.nvim_set_keymap('n', '<leader>tu', ':ASToggle<CR>', { desc = '[T]oggle [U]pdate on Save' })
+    end,
   },
   {
     'm4xshen/hardtime.nvim',
