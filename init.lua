@@ -172,6 +172,8 @@ vim.opt.scrolloff = 15
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+-- vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.opt.swapfile = false
 -- remaps from english to finnish keyboard layout
 
 -- Remap '/' to 'ö' for search
@@ -220,10 +222,16 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 --my key binds for neovim builtins
-vim.keymap.set('n', '<leader>qc', '<cmd>conf qall<CR>', { desc = '[Q]uit all with [C]onformation' })
-vim.keymap.set('n', '<leader>fg', '<cmd>!nohup nautilus --browser . & disown<CR>', { desc = '[F]loating Nautilus [G]ui' })
+vim.keymap.set('n', '<leader>q', '<cmd>wq<CR>', { desc = '[W]rite [Q]uit' })
+vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = '[W]rite ' })
+vim.keymap.set('n', '<leader>fr', '<cmd>!nohup nautilus --browser . & disown<CR>', { desc = '[F]loating Nautilus [R]gui' })
+vim.keymap.set('n', '<leader>lk', '<cmd>!nohup gitk --browser . & disown<CR>', { desc = '[L]azy floating Git[K] gui' })
 vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
+vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
+vim.o.expandtab = true -- Pressing the TAB key will insert spaces instead of a TAB character
+vim.o.softtabstop = 4 -- Number of spaces inserted instead of a TAB character
+vim.o.shiftwidth = 4 -- Number of spaces inserted when indenting
 -- these are for moving lines up and down in visual mode
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
@@ -282,7 +290,6 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-  'pocco81/auto-save.nvim',
   'tpope/vim-surround', -- Surround text with symbols
   'tpope/vim-fugitive',
   'dawsers/telescope-floaterm.nvim',
@@ -317,6 +324,18 @@ require('lazy').setup({
     },
   },
 
+  {
+    'pocco81/auto-save.nvim',
+    opts = {},
+    keys = {
+      vim.api.nvim_set_keymap('n', '<leader>tu', ':ASToggle<CR>', { desc = '[T]oggle [U]pdate on Save' }),
+    },
+  },
+  {
+    'm4xshen/hardtime.nvim',
+    dependencies = { 'MunifTanjim/nui.nvim', 'nvim-lua/plenary.nvim' },
+    opts = { max_count = 9, max_time = 1200 },
+  },
   {
     'lukas-reineke/indent-blankline.nvim',
     event = 'BufRead',
@@ -356,6 +375,7 @@ require('lazy').setup({
             request = 'launch',
             name = 'A with args',
             program = '${file}',
+            console = 'integratedTerminal',
             cwd = vim.fn.getcwd(),
             --args = { 'tampere', '0' },
           })
@@ -492,7 +512,7 @@ require('lazy').setup({
         ['<leader>b'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]eplace', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+        ['<leader>w'] = { name = '[W]rite', _ = 'which_key_ignore' },
         ['<leader>e'] = { name = '[E]rrors', _ = 'which_key_ignore' },
         ['<leader>q'] = { name = '[Q]uit', _ = 'which_key_ignore' },
         ['<leader>g'] = { name = '[G]oto', _ = 'which_key_ignore' },
@@ -641,6 +661,12 @@ require('lazy').setup({
         vim.cmd [[execute 'wincmd l']]
         builtin.find_files {}
       end, { desc = '[S]earch Fi[L]es in New Window' })
+
+      vim.keymap.set('n', '<leader>sm', function()
+        vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
+        vim.cmd [[execute 'wincmd l']]
+        builtin.find_files { cwd = '~/Documents/notes' }
+      end, { desc = '[S]earch [L]My Notes in New Window' })
     end,
   },
 
@@ -738,7 +764,7 @@ require('lazy').setup({
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
-          map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+          -- map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
@@ -861,7 +887,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = false, cpp = false }
+        local disable_filetypes = { c = true, cpp = true }
         return {
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
@@ -870,6 +896,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
+        --        python = { 'isort', 'black' },
         -- python = { "isort", "black" },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
@@ -1046,7 +1073,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'python', 'json' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
