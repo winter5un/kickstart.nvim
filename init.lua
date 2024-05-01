@@ -325,6 +325,15 @@ require('lazy').setup({
   },
 
   {
+    'peterhoeg/vim-qml',
+    ft = { 'qml' },
+  },
+  -- Qmake
+  {
+    'artoj/qmake-syntax-vim',
+    ft = { 'qmake' },
+  },
+  {
     'pocco81/auto-save.nvim',
     opts = {},
     config = function()
@@ -668,7 +677,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sm', function()
         vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
         vim.cmd [[execute 'wincmd l']]
-        builtin.find_files { cwd = '~/Documents/notes' }
+        builtin.live_grep { cwd = '~/Documents/notes' }
       end, { desc = '[S]earch [L]My Notes in New Window' })
     end,
   },
