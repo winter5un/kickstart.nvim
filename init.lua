@@ -189,7 +189,7 @@ vim.api.nvim_set_keymap('n', 'Ä', '?', { noremap = true })
 vim.api.nvim_set_keymap('x', 'Ä', '?', { noremap = true })
 
 -- Remap 'n' and 'N' to 'å' and 'Å' for next and previous search
-vim.api.nvim_set_keymap('n', 'å', 'n', { noremap = true })
+-- vim.api.nvim_set_keymap('n', 'å', 'n', { noremap = true })
 vim.api.nvim_set_keymap('n', 'Å', 'N', { noremap = true })
 vim.keymap.set('n', '<leader>ö', '<cmd>q<CR>', { desc = '[Q]uit' })
 -- Diagnostic keymaps
@@ -294,6 +294,7 @@ require('lazy').setup({
   'tpope/vim-fugitive',
   'dawsers/telescope-floaterm.nvim',
   'tamton-aquib/staline.nvim',
+  'kmonad/kmonad-vim',
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -323,7 +324,22 @@ require('lazy').setup({
       },
     },
   },
-
+  --  {
+  --  'stevearc/conform.nvim',
+  -- opts = {},
+  --config = function()
+  -- require('conform').setup {
+  --  format_on_save = true,
+  -- formatters_by_ft = {
+  --  cpp = { 'astyle' },
+  --        },
+  --     }
+  --    require('conform').formatters.astyle = {
+  --     command = 'astyle',
+  --    args = { '-i', '2', '-filename', '$FILENAME' },
+  --      }
+  --   end,
+  --  },
   {
     'peterhoeg/vim-qml',
     ft = { 'qml' },
@@ -333,6 +349,31 @@ require('lazy').setup({
     'artoj/qmake-syntax-vim',
     ft = { 'qmake' },
   },
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v3.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+      'MunifTanjim/nui.nvim',
+      -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+    },
+    opts = {
+      config = function()
+        require('neo-tree').setup {
+          enabled = true,
+        }
+        vim.api.nvim_set_keymap('n', 'å', ':NeoTreeToggle<CR>', { desc = 'Toggle [N]vim [T]ree' })
+      end,
+    },
+  },
+  --  {
+  --    'mbbill/undotree',
+  --    opts = { undotree_WindowLayout = 2, undotree_SetFocusWhenToggle = 1, undotree_SplitWidth = 85, undotree_ShortIndicators = 1 },
+  --    keys = {
+  --      { '<leader>u', ':UndotreeToggle<CR>', desc = '[U]ndo Tree' },
+  --    },
+  --  },
   {
     'pocco81/auto-save.nvim',
     opts = {},
@@ -346,7 +387,7 @@ require('lazy').setup({
   {
     'm4xshen/hardtime.nvim',
     dependencies = { 'MunifTanjim/nui.nvim', 'nvim-lua/plenary.nvim' },
-    opts = { max_count = 9, max_time = 1200 },
+    opts = { max_count = 20, max_time = 1200 },
   },
   {
     'lukas-reineke/indent-blankline.nvim',
@@ -532,6 +573,7 @@ require('lazy').setup({
         ['<leader>f'] = { name = '[F]loating Terminal', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ap Debugging', _ = 'which_key_ignore' },
         ['<leader>t'] = { name = '[T]emp Bindings', _ = 'which_key_ignore' },
+        ['<leader>s'] = { name = '[*]Search CW in CWD', _ = 'which_key_ignore' },
       }
     end,
   },
@@ -551,7 +593,7 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
         'nvim-telescope/telescope-fzf-native.nvim',
-
+        'debugloop/telescope-undo.nvim',
         -- `build` is used to run some command when the plugin is installed/updated.
         -- This is only run then, not every time Neovim starts up.
         build = 'make',
@@ -603,6 +645,7 @@ require('lazy').setup({
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
+          undo = {},
         },
       }
 
@@ -610,6 +653,9 @@ require('lazy').setup({
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
       pcall(require('telescope').load_extension, 'floaterm')
+      pcall(require('telescope').load_extension, 'undo')
+
+      vim.keymap.set('n', '<leader>u', '<cmd>Telescope undo<cr>')
 
       local function custom_buffers_command()
         require('telescope.builtin').buffers {
@@ -661,6 +707,14 @@ require('lazy').setup({
         }
       end, { desc = '[S]earch [ä] in Open Files' })
 
+      vim.keymap.set('n', '*', function()
+        builtin.live_grep {
+          grep_open_files = true,
+          prompt_title = 'Live Grep in Open Files',
+          search = vim.fn.expand '<cword>',
+        }
+      end, { desc = '[S]earch [*] current word in CWD' })
+
       -- Shortcut for searching your Neovim configuration files
       vim.keymap.set('n', '<leader>sn', function()
         vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
@@ -678,7 +732,19 @@ require('lazy').setup({
         vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
         vim.cmd [[execute 'wincmd l']]
         builtin.live_grep { cwd = '~/Documents/notes' }
-      end, { desc = '[S]earch [L]My Notes in New Window' })
+      end, { desc = '[S]earch [M]y Notes in New Window' })
+
+      vim.keymap.set('n', '<leader>sb', function()
+        vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
+        vim.cmd [[execute 'wincmd l']]
+        vim.cmd [[edit ~/.bash_aliases]]
+        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+          winblend = 10,
+          previewer = false,
+        })
+      end, { desc = '[S]earch [B]ash aliases in New Window' })
+
+      -- end telescope defines
     end,
   },
 
