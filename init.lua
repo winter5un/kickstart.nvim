@@ -248,6 +248,8 @@ vim.keymap.set('x', '<leader>p', [["_dP]]) --paste over visual selection without
 vim.keymap.set('n', '<C-f>', '<cmd>silent !tmux new tmux-sessionizer<CR>')
 vim.keymap.set('n', '<leader>rr', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = '[R]eplace [R]ecurring Text' })
 
+-- keybinds for building stuff
+--vim.keymap.set('n', '<leader>11', '<cmd>
 --
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -330,22 +332,63 @@ require('lazy').setup({
       },
     },
   },
-  --  {
-  --  'stevearc/conform.nvim',
-  -- opts = {},
-  --config = function()
-  -- require('conform').setup {
-  --  format_on_save = true,
-  -- formatters_by_ft = {
-  --  cpp = { 'astyle' },
-  --        },
-  --     }
-  --    require('conform').formatters.astyle = {
-  --     command = 'astyle',
-  --    args = { '-i', '2', '-filename', '$FILENAME' },
-  --      }
-  --   end,
-  --  },
+  {
+    "christoomey/vim-tmux-navigator",
+    opts = {},
+    -- config = function()
+    --   require('vim-tmux-navigator').setup {
+    --     disable_when_zoomed = false,
+    --   }
+    -- end,
+    cmd = {
+      "TmuxNavigateLeft",
+      "TmuxNavigateDown",
+      "TmuxNavigateUp",
+      "TmuxNavigateRight",
+      "TmuxNavigatePrevious",
+    },
+    keys = {
+      { "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
+      { "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
+      { "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
+      { "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+      { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+    },
+  },
+  {
+    'stevearc/conform.nvim',
+    opts = {},
+    config = function()
+      require('conform').setup {
+        format_on_save = true,
+        formatters_by_ft = {
+          cpp = { 'astyle' },
+          c = { 'astyle' },
+          h = { 'astyle' },
+        },
+      }
+      require('conform').formatters.astyle = {
+        command = 'astyle',
+        args = {
+          '--suffix=none',
+          'convert-tabs',
+          'exclude=build',
+          'convert-tabs',
+          'close-templates',
+          'pad-oper',
+          'pad-header',
+          'unpad-paren',
+          'align-pointer=type',
+          'align-reference=type',
+          'indent-preproc-define',
+          'indent=spaces=4',
+          'recursive',
+          'indent-switches',
+          'style=allman',
+        },
+      }
+    end,
+  },
   {
     'peterhoeg/vim-qml',
     ft = { 'qml' },
@@ -362,14 +405,63 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
       'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
       'MunifTanjim/nui.nvim',
-      -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+      '3rd/image.nvim', -- Optional image support in preview window: See `# Preview Mode` for more information
     },
     opts = {
       config = function()
         require('neo-tree').setup {
           enabled = true,
+          close_if_last_window = true,
+          file_size = {
+            enabled = true,
+            required_width = 64, -- min width of window required to show this column
+          },
+          type = {
+            enabled = true,
+            required_width = 122, -- min width of window required to show this column
+          },
+          last_modified = {
+            enabled = true,
+            required_width = 88, -- min width of window required to show this column
+          },
+          created = {
+            enabled = true,
+            required_width = 110, -- min width of window required to show this column
+          },
+          filesystem = {
+          filtered_items = {
+            visible = false, -- when true, they will just be displayed differently than normal items
+            hide_dotfiles = false,
+            hide_gitignored = false,
+            hide_hidden = false, -- only works on Windows for hidden files/directories
+            hide_by_name = {
+              --"node_modules"
+            },
+            hide_by_pattern = { -- uses glob style patterns
+              --"*.meta",
+              --"*/src/*/tsconfig.json",
+            },
+            always_show = { -- remains visible even if other settings would normally hide it
+              ".gitignored",
+            },
+            always_show_by_pattern = { -- uses glob style patterns
+              --".env*",
+            },
+            never_show = { -- remains hidden even if visible is toggled to true, this overrides always_show
+              --".DS_Store",
+              --"thumbs.db"
+            },
+            never_show_by_pattern = { -- uses glob style patterns
+              --".null-ls_*",
+            },
+          },
+          follow_current_file = {
+            enabled = true, -- This will find and focus the file in the active buffer every time
+            --               -- the current file is changed while the tree is open.
+            leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+          },
         }
-        vim.api.nvim_set_keymap('n', 'å', ':NeoTreeToggle<CR>', { desc = 'Toggle [N]vim [T]ree' })
+      }
       end,
     },
   },
@@ -390,11 +482,11 @@ require('lazy').setup({
       vim.api.nvim_set_keymap('n', '<leader>tu', ':ASToggle<CR>', { desc = '[T]oggle [U]pdate on Save' })
     end,
   },
-  {
+  --[[ {
     'm4xshen/hardtime.nvim',
     dependencies = { 'MunifTanjim/nui.nvim', 'nvim-lua/plenary.nvim' },
     opts = { max_count = 20, max_time = 1200 },
-  },
+  }, ]]
   {
     'lukas-reineke/indent-blankline.nvim',
     event = 'BufRead',
@@ -404,12 +496,12 @@ require('lazy').setup({
       }
     end,
   },
-  {
-    'stevearc/oil.nvim',
-    opts = {},
-    -- Optional dependencies
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-  },
+  -- {
+  --   'stevearc/oil.nvim',
+  --   opts = {},
+  --   -- Optional dependencies
+  --   dependencies = { 'nvim-tree/nvim-web-devicons' },
+  -- },
   {
     'mfussenegger/nvim-dap',
     dependencies = {
@@ -507,6 +599,7 @@ require('lazy').setup({
     dependencies = {
       'nvim-telescope/telescope.nvim',
       'nvim-lua/plenary.nvim',
+--      'christoomey/vim-tmux-navigator.nvim',
     },
     keys = {
       { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
@@ -545,6 +638,26 @@ require('lazy').setup({
       'tpope/vim-fugitive',
     },
   },
+
+  {
+    'ThePrimeagen/harpoon',
+    config = function()
+      local harpoon = require 'harpoon'
+      local harpoon_ui = require 'harpoon.ui'
+      local harpoon_cmd_ui = require 'harpoon.cmd-ui'
+      local harpoon_mark = require 'harpoon.mark'
+      local harpoon_tmux = require 'harpoon.tmux'
+      harpoon.setup {}
+      vim.keymap.set('n', '<leader>hh', harpoon_ui.toggle_quick_menu, { desc = 'Toggle [H]arpoon' })
+      vim.keymap.set('n', '<leader>ha', harpoon_mark.add_file, { desc = 'Add [A] file to Harpoon' })
+      vim.keymap.set('n', '<leader>hj', harpoon_ui.nav_next, { desc = 'Navigate to [J] next Harpoon' })
+      vim.keymap.set('n', '<leader>hk', harpoon_ui.nav_prev, { desc = 'Navigate to [K] previous Harpoon' })
+      vim.keymap.set('n', '<leader>11', '<cmd>require(harpoon.tmux).sendCommand("build", "podui-build-push")<cr>', { desc = 'Navigate to [K] previous Harpoon' })
+
+      
+    end,
+  },
+
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -567,7 +680,7 @@ require('lazy').setup({
 
       -- Document existing key chains
       require('which-key').register {
-        ['<leader>c'] = { name = '[C]o-Pilot', _ = 'which_key_ignore' },
+        ['<leader>c'] = { name = '[C]o-Pilot and [Copy] commands', _ = 'which_key_ignore' },
         ['<leader>b'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]eplace', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
@@ -579,7 +692,7 @@ require('lazy').setup({
         ['<leader>f'] = { name = '[F]loating Terminal', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ap Debugging', _ = 'which_key_ignore' },
         ['<leader>t'] = { name = '[T]emp Bindings', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[*]Search CW in CWD', _ = 'which_key_ignore' },
+        ['<leader>*'] = { name = '[*]Search CW in CWD', _ = 'which_key_ignore' },
       }
     end,
   },
@@ -714,18 +827,14 @@ require('lazy').setup({
       end, { desc = '[S]earch [ä] in Open Files' })
 
       vim.keymap.set('n', '*', function()
-        builtin.live_grep {
-          grep_open_files = true,
-          prompt_title = 'Live Grep in Open Files',
-          search = vim.fn.expand '<cword>',
-        }
+        builtin.grep_string {}
       end, { desc = '[S]earch [*] current word in CWD' })
 
       -- Shortcut for searching your Neovim configuration files
       vim.keymap.set('n', '<leader>sn', function()
         vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
         vim.cmd [[execute 'wincmd l']]
-        builtin.find_files { cwd = vim.fn.stdpath 'config' }
+        builtin.live_grep { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
 
       vim.keymap.set('n', '<leader>sl', function()
@@ -740,6 +849,13 @@ require('lazy').setup({
         builtin.live_grep { cwd = '~/Documents/notes' }
       end, { desc = '[S]earch [M]y Notes in New Window' })
 
+      vim.keymap.set('n', '<leader>sy', function()
+        vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
+        vim.cmd [[execute 'wincmd l']]
+        builtin.live_grep { cwd = '~/framery_repos/meta-supra2/' }
+      end, { desc = '[S]earch [M]eta Supra2 Repo' })
+
+
       vim.keymap.set('n', '<leader>sb', function()
         vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
         vim.cmd [[execute 'wincmd l']]
@@ -749,6 +865,16 @@ require('lazy').setup({
           previewer = false,
         })
       end, { desc = '[S]earch [B]ash aliases in New Window' })
+
+      vim.keymap.set('n', '<leader>st', function()
+        vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
+        vim.cmd [[execute 'wincmd l']]
+        vim.cmd [[edit ~/.tmux.conf]]
+        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+          winblend = 10,
+          previewer = false,
+        })
+      end, { desc = '[S]earch [T]mux Conf' })
 
       -- end telescope defines
     end,
@@ -760,8 +886,8 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>cs', ':Copilot<CR>', { desc = '[C]o-Pilot [S]uggest' })
       vim.g.copilot_no_tab_map = true
       vim.keymap.set('i', '<C-m>', '<Plug>(copilot-accept)', { replace_keycodes = false })
-      vim.keymap.set('i', '<C-l>', '<Plug>(copilot-next)', { replace_keycodes = false })
-      vim.keymap.set('i', '<C-h>', '<Plug>(copilot-previous)', { replace_keycodes = false })
+      vim.keymap.set('i', '<C-n>', '<Plug>(copilot-next)', { replace_keycodes = false })
+      vim.keymap.set('i', '<C-b>', '<Plug>(copilot-previous)', { replace_keycodes = false })
       vim.keymap.set('i', '<C-M>', '<Plug>(copilot-accept-line)', { replace_keycodes = false })
       vim.keymap.set('i', '<Tab>', 'copilot#AcceptWord("<Tab>")', { silent = true, expr = true, replace_keycodes = false })
       vim.keymap.set('i', '<CR>', '<Plug>(copilot-dismiss)<CR>', { silent = true })
@@ -1092,6 +1218,41 @@ require('lazy').setup({
           { name = 'path' },
         },
       }
+    end,
+  },
+  {
+    'mfussenegger/nvim-lint',
+    config = function()
+      local pattern = [[^(%a%d%.)+:(%d+) : (%a%d%s)+`(%g+)']]
+      local groups = { 'line', 'col', 'message', 'code' }
+      local severity_map = {
+        ['error'] = vim.diagnostic.severity.ERROR,
+        ['warning'] = vim.diagnostic.severity.WARN,
+        ['information'] = vim.diagnostic.severity.INFO,
+        ['hint'] = vim.diagnostic.severity.HINT,
+      }
+      require('lint').linters.qmllint = {
+        name = 'qmllint',
+        cmd = 'qmllint',
+        stdin = true,
+        stream = 'stdout',
+        ignore_exitcode = true,
+        parser = require('lint.parser').from_pattern(pattern, groups, severity_map, {}, {}),
+      }
+      require('lint').linters_by_ft = {
+        qml = { 'qmllint' },
+      }
+
+      vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
+        callback = function()
+          -- try_lint without arguments runs the linters defined in `linters_by_ft`
+          -- for the current filetype
+          require('lint').try_lint()
+
+          -- You can call `try_lint` with a linter name or a list of names to always
+          -- run specific linters, independent of the `linters_by_ft` configuration
+        end,
+      })
     end,
   },
 
