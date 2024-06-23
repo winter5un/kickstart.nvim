@@ -1,10 +1,12 @@
---
+--get_ovpn_production_profile_path 
 --[[
 
   TODO list
   fix copilot bindings
-  add windows leader bindings
-  change tabs to spaces
+  get astyle running withthe right args for cpp files
+  get qml lint running right with qml files
+  hrpoon actions for build pane
+
 lua crashcourse
 redo config into multiple files potentially or at least clean up
 c/c++ debugging
@@ -171,7 +173,6 @@ vim.opt.scrolloff = 15
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
-
 -- vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.opt.swapfile = false
 -- remaps from english to finnish keyboard layout
@@ -190,7 +191,7 @@ vim.api.nvim_set_keymap('x', 'Ä', '?', { noremap = true })
 
 -- Remap 'n' and 'N' to 'å' and 'Å' for next and previous search
 -- vim.api.nvim_set_keymap('n', 'å', 'n', { noremap = true })
-vim.api.nvim_set_keymap('n', 'Å', 'N', { noremap = true })
+--vim.api.nvim_set_keymap('n', 'Å', 'N', { noremap = true })
 vim.keymap.set('n', '<leader>ö', '<cmd>q<CR>', { desc = '[Q]uit' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
@@ -216,18 +217,23 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
-
+-- vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+-- vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+-- vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+-- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
 --my key binds for neovim builtins
+vim.keymap.set('n', '<leader>å', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle [N]vim [T]ree' })
 vim.keymap.set('n', '<leader>q', '<cmd>wq<CR>', { desc = '[W]rite [Q]uit' })
 vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = '[W]rite ' })
 vim.keymap.set('n', '<leader>fr', '<cmd>!nohup nautilus --browser . & disown<CR>', { desc = '[F]loating Nautilus [R]gui' })
 vim.keymap.set('n', '<leader>lk', '<cmd>!nohup gitk --browser . & disown<CR>', { desc = '[L]azy floating Git[K] gui' })
 vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
+vim.keymap.set('n', '<leader>cp', '<Cmd>let @+ = expand("%")<CR>', { desc = '[C]opy Relative [P]ath to clipboard' })
+vim.keymap.set('n', '<leader>cP', '<Cmd>let @+ = expand("%:p")<CR>', { desc = '[C]opy Absolute [P]ath to clipboard' })
+
 vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
 vim.o.expandtab = true -- Pressing the TAB key will insert spaces instead of a TAB character
 vim.o.softtabstop = 4 -- Number of spaces inserted instead of a TAB character
@@ -239,7 +245,7 @@ vim.keymap.set('n', 'J', 'mzJ`z')
 vim.keymap.set('n', 'n', 'nzzzv')
 vim.keymap.set('n', 'N', 'Nzzzv')
 vim.keymap.set('x', '<leader>p', [["_dP]]) --paste over visual selection without yanking
-vim.keymap.set('n', '<C-f>', '<cmd>silent !tmux neww tmux-sessionizer<CR>')
+vim.keymap.set('n', '<C-f>', '<cmd>silent !tmux new tmux-sessionizer<CR>')
 vim.keymap.set('n', '<leader>rr', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = '[R]eplace [R]ecurring Text' })
 
 --
