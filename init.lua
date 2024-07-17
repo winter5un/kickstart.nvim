@@ -96,7 +96,6 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
-require('custom.plugins').hello_world()
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -175,15 +174,13 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.opt.swapfile = false
--- remaps from english to finnish keyboard layout
 
+-- remaps from english to finnish keyboard layout
 -- Remap '/' to 'ö' for search
 vim.api.nvim_set_keymap('n', 'ö', ':', { noremap = true })
 vim.api.nvim_set_keymap('x', 'ö', ':', { noremap = true })
-vim.api.nvim_set_keymap('n', 'Ö', '?', { noremap = true })
-vim.api.nvim_set_keymap('x', 'Ö', '?', { noremap = true })
 
--- Remap '*' to 'ä' for word under cursor search
+-- Remap '*' to 'f' for word under cursor search
 vim.api.nvim_set_keymap('n', 'ä', '/', { noremap = true })
 vim.api.nvim_set_keymap('x', 'ä', '/', { noremap = true })
 vim.api.nvim_set_keymap('n', 'Ä', '?', { noremap = true })
@@ -233,6 +230,9 @@ vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
 vim.keymap.set('n', '<leader>cp', '<Cmd>let @+ = expand("%")<CR>', { desc = '[C]opy Relative [P]ath to clipboard' })
 vim.keymap.set('n', '<leader>cP', '<Cmd>let @+ = expand("%:p")<CR>', { desc = '[C]opy Absolute [P]ath to clipboard' })
+
+-- bind f key to search for word under cursor in current buffer
+vim.keymap.set('n', 'f', '*', { desc = 'Search for word under cursor' })
 
 vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
 vim.o.expandtab = true -- Pressing the TAB key will insert spaces instead of a TAB character
@@ -315,6 +315,9 @@ require('lazy').setup({
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
+  -- nice code screenshots
+  { "mistricky/codesnap.nvim", build = "make" },
+
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -332,14 +335,32 @@ require('lazy').setup({
       },
     },
   },
+  {'milisims/nvim-luaref'},
+  {'folke/lua-dev.nvim'},
+  {'tpope/vim-obsession'},
+  {
+  "folke/flash.nvim",
+  event = "VeryLazy",
+  ---@type Flash.Config
+  opts = {},
+  -- stylua: ignore
+  keys = {
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+      { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+      { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+    },
+  },
+  
   {
     "christoomey/vim-tmux-navigator",
     opts = {},
-    -- config = function()
-    --   require('vim-tmux-navigator').setup {
-    --     disable_when_zoomed = false,
-    --   }
-    -- end,
+    config = function()
+      require('vim-tmux-navigator').setup {
+        disable_when_zoomed = false,
+      }
+    end,
     cmd = {
       "TmuxNavigateLeft",
       "TmuxNavigateDown",
@@ -482,11 +503,11 @@ require('lazy').setup({
       vim.api.nvim_set_keymap('n', '<leader>tu', ':ASToggle<CR>', { desc = '[T]oggle [U]pdate on Save' })
     end,
   },
-  --[[ {
+  {
     'm4xshen/hardtime.nvim',
     dependencies = { 'MunifTanjim/nui.nvim', 'nvim-lua/plenary.nvim' },
-    opts = { max_count = 20, max_time = 1200 },
-  }, ]]
+    opts = { max_count = 5, max_time = 1200 },
+  }, 
   {
     'lukas-reineke/indent-blankline.nvim',
     event = 'BufRead',
@@ -754,11 +775,12 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
+        defaults = {
         --   mappings = {
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
-        -- },
+          path_display = { 'smart' },
+        },
         pickers = { find_files = { hidden = true } },
         extensions = {
           ['ui-select'] = {
@@ -808,6 +830,11 @@ require('lazy').setup({
           previewer = false,
         })
       end, { desc = '[/] Fuzzily search in current buffer' })
+
+      vim.keymap.set('n', '<leader>sc', function ()
+        
+        builtin.lsp_document_symbols({symbols='method'})
+      end, { desc = '[S]earch [C]functions' })
 
       -- give custom parameters to the `buffers` picker
       vim.keymap.set('n', '<leader><leader>', function()
