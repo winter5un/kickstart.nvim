@@ -668,12 +668,13 @@ require('lazy').setup({
       local harpoon_cmd_ui = require 'harpoon.cmd-ui'
       local harpoon_mark = require 'harpoon.mark'
       local harpoon_tmux = require 'harpoon.tmux'
-      harpoon.setup {}
+      harpoon.setup {
+            enter_on_sendcmd = true,
+      }
       vim.keymap.set('n', '<leader>hh', harpoon_ui.toggle_quick_menu, { desc = 'Toggle [H]arpoon' })
       vim.keymap.set('n', '<leader>ha', harpoon_mark.add_file, { desc = 'Add [A] file to Harpoon' })
       vim.keymap.set('n', '<leader>hj', harpoon_ui.nav_next, { desc = 'Navigate to [J] next Harpoon' })
       vim.keymap.set('n', '<leader>hk', harpoon_ui.nav_prev, { desc = 'Navigate to [K] previous Harpoon' })
-      vim.keymap.set('n', '<leader>11', '<cmd>require(harpoon.tmux).sendCommand("build", "podui-build-push")<cr>', { desc = 'Navigate to [K] previous Harpoon' })
 
       
     end,
@@ -1057,7 +1058,7 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         clangd = {},
-        gopls = {},
+       --gopls = {},
         pyright = {},
         rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -1341,6 +1342,20 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  {
+    dir = "/home/nicholasmabe/.config/nvim/lua/projcom/init.lua",
+    name = "projcom",
+    dependencies = {
+      'ThePrimeagen/harpoon',
+    },
+    config = function ()
+      local projcom = require('projcom')
+      projcom.setup({})
+
+    end
+  },
+
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -1371,9 +1386,8 @@ require('lazy').setup({
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
   },
-
-  -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
-  -- init.lua. If you want these files, they are in the repository, so you can just download them and
+    -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
+    dir = "/home/nicholasmabe/.config/nvim/lua/plugins/projcom/projcom.lua",
   -- place them in the correct locations.
 
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
