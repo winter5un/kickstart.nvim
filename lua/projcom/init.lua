@@ -28,7 +28,7 @@ function M.setup(user_config)
     local stop_service = "stop_service"
     local start_service = "start_service"
     local restart_service = "restart_service"
-    local comd = "cmd"
+    local command_string = "cmd"
     local description = "desc"
 
 
@@ -43,7 +43,7 @@ function M.setup(user_config)
     restart_service
 }
   
-  config.debug = config.debug or true
+  config.debug = config.debug or false
   config.commands_dir_name = config.commands_dir_name or ".neovim"
   config.commands_file_name = config.commands_file_name or "commands.lua"
 
@@ -55,21 +55,28 @@ function M.setup(user_config)
     local commands = M.load_commands()
     if commands then
 
-      for k, v in pairs(standard_cmds) do
-        debug_print("Key: " .. k .. " Value: " .. v)
-        if commands[v] then
-          debug_print("We have a " .. v .. " command")
-          debug_print("Command: " .. commands[v][comd])
-          vim.keymap.set('n', "<leader>1" .. k, function()
-            harpoon.sendCommand("3", commands[v][comd] .. "\n")
-          end, { desc = commands[v][description] })
+      vim.keymap.set('n', "<leader>1q", function()
+        harpoon.sendCommand("3", "C-c")
+      end, { desc = "clober pane 3" })
+
+      for screen_index, screen_value in pairs(commands) do
+        debug_print("Screen Index: " .. screen_index)
+        for std_command_key, std_command_value in pairs(standard_cmds) do
+          debug_print("Key: " .. std_command_key .. " Value: " .. std_command_value)
+          if commands[screen_index][std_command_value] then
+            debug_print("We have a " .. std_command_value .. " command")
+            debug_print("Command: " .. commands[screen_index][std_command_value][command_string])
+            debug_print("Description: " .. commands[screen_index][std_command_value][description])
+            vim.keymap.set('n', "<leader>1" .. std_command_key, function()
+              harpoon.sendCommand(screen_value, "C-c")
+              harpoon.sendCommand(screen_value, commands[screen_index][std_command_value][command_string] .. "\n")
+            end, { desc = commands[screen_index][std_command_value][description] })
+          end
         end
       end
     end
 
-
-
-  end
+ end
   --vim.api.nvim_create_autocmd("VimEnter", { group = augroup, desc = "find out if im in a repo", once = true, callback = M.main })
 
 end

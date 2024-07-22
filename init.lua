@@ -1350,7 +1350,9 @@ require('lazy').setup({
     },
     config = function ()
       local projcom = require('projcom')
-      projcom.setup({})
+      projcom.setup({
+        debug = false,
+      })
 
     end
   },
