@@ -3,11 +3,21 @@ return {
     'neovim/nvim-lspconfig',
     opts = {
       servers = {
+         pylsp = {
+          settings = {
+            pylsp = {
+              plugins = {
+                pyflakes = { enabled = false },
+                pylint = { enabled = false},
+              },
+            },
+          },
+        },
         pyright = {
           settings = {
             python = {
               analysis = {
-                typeCheckingMode = 'off',
+                typeCheckingMode = 'on',
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
                 diagnosticMode = 'workspace',

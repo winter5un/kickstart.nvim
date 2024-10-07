@@ -155,7 +155,7 @@ vim.opt.splitbelow = true
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣', space = '·'}
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -165,6 +165,8 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 15
+
+vim.opt_global.scroll=20
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -193,8 +195,10 @@ vim.keymap.set('n', '<leader>ö', '<cmd>q<CR>', { desc = '[Q]uit' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
-vim.keymap.set('n', '<leader>ee', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
-vim.keymap.set('n', '<leader>eq', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>eq', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
+vim.keymap.set('n', '<leader>ee', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>er', vim.diagnostic.goto_next, { desc = 'Next diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>ew', vim.diagnostic.goto_prev, { desc = 'Prev diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -230,9 +234,6 @@ vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
 vim.keymap.set('n', '<leader>cp', '<Cmd>let @+ = expand("%")<CR>', { desc = '[C]opy Relative [P]ath to clipboard' })
 vim.keymap.set('n', '<leader>cP', '<Cmd>let @+ = expand("%:p")<CR>', { desc = '[C]opy Absolute [P]ath to clipboard' })
-
--- bind f key to search for word under cursor in current buffer
-vim.keymap.set('n', 'f', '*', { desc = 'Search for word under cursor' })
 
 vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
 vim.o.expandtab = true -- Pressing the TAB key will insert spaces instead of a TAB character
@@ -352,13 +353,12 @@ require('lazy').setup({
       { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
     },
   },
-  
   {
     "christoomey/vim-tmux-navigator",
     opts = {},
     config = function()
-      require('vim-tmux-navigator').setup {
-        disable_when_zoomed = false,
+      require('tmux_navigator').setup {
+        disable_when_zoomed = true,
       }
     end,
     cmd = {
@@ -376,6 +376,23 @@ require('lazy').setup({
       { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
     },
   },
+  -- { 'alexghergh/nvim-tmux-navigation', config = function()
+  --
+  --   local nvim_tmux_nav = require('nvim-tmux-navigation')
+  --
+  --   nvim_tmux_nav.setup {
+  --       disable_when_zoomed = true -- defaults to false
+  --   }
+  --
+  --   vim.keymap.set('n', "<C-h>", nvim_tmux_nav.NvimTmuxNavigateLeft)
+  --   vim.keymap.set('n', "<C-j>", nvim_tmux_nav.NvimTmuxNavigateDown)
+  --   vim.keymap.set('n', "<C-k>", nvim_tmux_nav.NvimTmuxNavigateUp)
+  --   vim.keymap.set('n', "<C-l>", nvim_tmux_nav.NvimTmuxNavigateRight)
+  --   vim.keymap.set('n', "<C-\\>", nvim_tmux_nav.NvimTmuxNavigateLastActive)
+  --   vim.keymap.set('n', "<C-Space>", nvim_tmux_nav.NvimTmuxNavigateNext)
+  --
+  -- end
+  -- },
   {
     'stevearc/conform.nvim',
     opts = {},
@@ -506,8 +523,12 @@ require('lazy').setup({
   {
     'm4xshen/hardtime.nvim',
     dependencies = { 'MunifTanjim/nui.nvim', 'nvim-lua/plenary.nvim' },
-    opts = { max_count = 5, max_time = 1200 },
-  }, 
+    opts = { max_count = 8, max_time = 1200 },
+    keys = {
+      { '<leader>th', '<cmd>Hardtime toggle<cr>', desc = 'Toggle [H]ardtime' },
+    },
+
+  },
   {
     'lukas-reineke/indent-blankline.nvim',
     event = 'BufRead',
@@ -515,6 +536,16 @@ require('lazy').setup({
       require('ibl').setup {
         indent = { char = '▏' },
       }
+    end,
+  },
+  {
+    'LeonHeidelbach/trailblazer.nvim',
+    config = function()
+        require("trailblazer").setup({
+            -- your custom config goes here
+          auto_save_trailblazer_state_on_exit = true,
+          auto_load_trailblazer_state_on_enter = true,
+        })
     end,
   },
   -- {
@@ -820,7 +851,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader>gj', builtin.jumplist, { desc = '[G]oto [J]umplist' })
+      vim.keymap.set('n', 'gj', builtin.jumplist, { desc = '[G]oto [J]umplist' })
       vim.keymap.set('n', '<leader>sj', '<C-w>v<C-w>l:Telescope jumplist<CR>', { noremap = true, silent = true, desc = '[S]earch [J]umplist in new Split' })
 
       -- Slightly advanced example of overriding default behavior and theme
@@ -913,10 +944,11 @@ require('lazy').setup({
     config = function()
       vim.keymap.set('n', '<leader>cs', ':Copilot<CR>', { desc = '[C]o-Pilot [S]uggest' })
       vim.g.copilot_no_tab_map = true
-      vim.keymap.set('i', '<C-m>', '<Plug>(copilot-accept)', { replace_keycodes = false })
-      vim.keymap.set('i', '<C-n>', '<Plug>(copilot-next)', { replace_keycodes = false })
+      vim.keymap.set('i', '<C-M>', '<Plug>(copilot-accept)', { replace_keycodes = false })
+      vim.keymap.set('i', '<C-N>', '<Plug>(copilot-next)', { replace_keycodes = false })
       vim.keymap.set('i', '<C-b>', '<Plug>(copilot-previous)', { replace_keycodes = false })
-      vim.keymap.set('i', '<C-M>', '<Plug>(copilot-accept-line)', { replace_keycodes = false })
+      -- vim.keymap.set('i', '<C-m>', '<Plug>(copilot-accept-line)', { replace_keycodes = false })
+      vim.keymap.set('i', "<C-'>", 'copilot#AcceptLine("<Tab>")', {silent = true, expr = true, replace_keycodes = false})
       vim.keymap.set('i', '<Tab>', 'copilot#AcceptWord("<Tab>")', { silent = true, expr = true, replace_keycodes = false })
       vim.keymap.set('i', '<CR>', '<Plug>(copilot-dismiss)<CR>', { silent = true })
     end,
@@ -1211,7 +1243,7 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<S-Tab>'] = cmp.mapping.confirm { select = true },
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
@@ -1226,17 +1258,17 @@ require('lazy').setup({
           --
           -- <c-l> will move you to the right of each of the expansion locations.
           -- <c-h> is similar, except moving you backwards.
-          ['<C-l>'] = cmp.mapping(function()
-            if luasnip.expand_or_locally_jumpable() then
-              luasnip.expand_or_jump()
-            end
-          end, { 'i', 's' }),
-          ['<C-h>'] = cmp.mapping(function()
-            if luasnip.locally_jumpable(-1) then
-              luasnip.jump(-1)
-            end
-          end, { 'i', 's' }),
-
+          -- ['<C-l>'] = cmp.mapping(function()
+          --   if luasnip.expand_or_locally_jumpable() then
+          --     luasnip.expand_or_jump()
+          --   end
+          -- end, { 'i', 's' }),
+          -- ['<C-h>'] = cmp.mapping(function()
+          --   if luasnip.locally_jumpable(-1) then
+          --     luasnip.jump(-1)
+          --   end
+          -- end, { 'i', 's' }),
+          --
           -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
           --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
         },
@@ -1248,41 +1280,41 @@ require('lazy').setup({
       }
     end,
   },
-  {
-    'mfussenegger/nvim-lint',
-    config = function()
-      local pattern = [[^(%a%d%.)+:(%d+) : (%a%d%s)+`(%g+)']]
-      local groups = { 'line', 'col', 'message', 'code' }
-      local severity_map = {
-        ['error'] = vim.diagnostic.severity.ERROR,
-        ['warning'] = vim.diagnostic.severity.WARN,
-        ['information'] = vim.diagnostic.severity.INFO,
-        ['hint'] = vim.diagnostic.severity.HINT,
-      }
-      require('lint').linters.qmllint = {
-        name = 'qmllint',
-        cmd = 'qmllint',
-        stdin = true,
-        stream = 'stdout',
-        ignore_exitcode = true,
-        parser = require('lint.parser').from_pattern(pattern, groups, severity_map, {}, {}),
-      }
-      require('lint').linters_by_ft = {
-        qml = { 'qmllint' },
-      }
-
-      vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
-        callback = function()
-          -- try_lint without arguments runs the linters defined in `linters_by_ft`
-          -- for the current filetype
-          require('lint').try_lint()
-
-          -- You can call `try_lint` with a linter name or a list of names to always
-          -- run specific linters, independent of the `linters_by_ft` configuration
-        end,
-      })
-    end,
-  },
+  -- {
+  --   'mfussenegger/nvim-lint',
+  --   config = function()
+  --     local pattern = [[^(%a%d%.)+:(%d+) : (%a%d%s)+`(%g+)']]
+  --     local groups = { 'line', 'col', 'message', 'code' }
+  --     local severity_map = {
+  --       ['error'] = vim.diagnostic.severity.ERROR,
+  --       ['warning'] = vim.diagnostic.severity.WARN,
+  --       ['information'] = vim.diagnostic.severity.INFO,
+  --       ['hint'] = vim.diagnostic.severity.HINT,
+  --     }
+  --     require('lint').linters.qmllint = {
+  --       name = 'qmllint',
+  --       cmd = 'qmllint',
+  --       stdin = true,
+  --       stream = 'stdout',
+  --       ignore_exitcode = true,
+  --       parser = require('lint.parser').from_pattern(pattern, groups, severity_map, {}, {}),
+  --     }
+  --     require('lint').linters_by_ft = {
+  --       qml = { 'qmllint' },
+  --     }
+  --
+  --     vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
+  --       callback = function()
+  --         -- try_lint without arguments runs the linters defined in `linters_by_ft`
+  --         -- for the current filetype
+  --         require('lint').try_lint()
+  --
+  --         -- You can call `try_lint` with a linter name or a list of names to always
+  --         -- run specific linters, independent of the `linters_by_ft` configuration
+  --       end,
+  --     })
+  --   end,
+  -- },
 
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
@@ -1399,7 +1431,7 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+    require 'kickstart.plugins.lint',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
