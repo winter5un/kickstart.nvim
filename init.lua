@@ -970,6 +970,11 @@ require('lazy').setup({
       { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
+      require('lspconfig').gdscript.setup{}
+      local pipepath = '/home/nicholasmabe/gdtmp/godot.pipe'
+      if not vim.loop.fs_stat(pipepath) then
+        vim.fn.serverstart(pipepath)
+      end
       -- Brief aside: **What is LSP?**
       --
       -- LSP is an initialism you've probably heard, but might not understand what it is.
@@ -1093,6 +1098,10 @@ require('lazy').setup({
        --gopls = {},
         pyright = {},
         rust_analyzer = {},
+        gdscript = {
+          
+          filetypes = { 'gd' },
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
