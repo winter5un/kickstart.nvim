@@ -225,15 +225,22 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
 --my key binds for neovim builtins
+--to add:
+--gUiw to make word uppercase like const -> CONST
+--leader aa to paste from register a
+--leader ya to yank to register a
 vim.keymap.set('n', '<leader>å', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle [N]vim [T]ree' })
+vim.keymap.set('n', 'å', '%', { desc = 'Jump to matching bracket' })
+vim.keymap.set('v', 'å', '%', { desc = 'Jump to matching bracket' })
 vim.keymap.set('n', '<leader>q', '<cmd>wq<CR>', { desc = '[W]rite [Q]uit' })
 vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = '[W]rite ' })
 vim.keymap.set('n', '<leader>fr', '<cmd>!nohup nautilus --browser . & disown<CR>', { desc = '[F]loating Nautilus [R]gui' })
-vim.keymap.set('n', '<leader>lk', '<cmd>!nohup gitk --browser . & disown<CR>', { desc = '[L]azy floating Git[K] gui' })
+-- vim.keymap.set('n', '<leader>lk', '<cmd>!nohup gitk --browser . & disown<CR>', { desc = '[L]azy floating Git[K] gui' })
 vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
 vim.keymap.set('n', '<leader>cp', '<Cmd>let @+ = expand("%")<CR>', { desc = '[C]opy Relative [P]ath to clipboard' })
 vim.keymap.set('n', '<leader>cP', '<Cmd>let @+ = expand("%:p")<CR>', { desc = '[C]opy Absolute [P]ath to clipboard' })
+vim.keymap.set('n', '<C-å>', '<Cmd>@å<CR>', { desc = 'Execute macro [å]' })
 
 vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
 vim.o.expandtab = true -- Pressing the TAB key will insert spaces instead of a TAB character
@@ -811,7 +818,7 @@ require('lazy').setup({
         --   mappings = {
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
-          path_display = { 'smart' },
+          path_display = { 'truncate' },
         },
         pickers = { find_files = { hidden = true } },
         extensions = {
@@ -864,9 +871,12 @@ require('lazy').setup({
       end, { desc = '[/] Fuzzily search in current buffer' })
 
       vim.keymap.set('n', '<leader>sc', function ()
-        
         builtin.lsp_document_symbols({symbols='method'})
       end, { desc = '[S]earch [C]functions' })
+
+      vim.keymap.set('n', '<leader>si', function ()
+        builtin.lsp_document_symbols()
+      end, { desc = '[S]earch [I]Symbols' })
 
       -- give custom parameters to the `buffers` picker
       vim.keymap.set('n', '<leader><leader>', function()
