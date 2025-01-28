@@ -124,7 +124,7 @@ function M.find_commands_file()
   --check if .nvim dir exists in repo base dir
   --dont open just check if it exists
   -- if it does not then return false
-  local handle = io.popen("find . -name " .. config.commands_dir_name)
+  local handle = io.popen("find -maxdepth 3 . -name " .. config.commands_dir_name)
   if handle == nil then
     return false
   end
@@ -132,7 +132,7 @@ function M.find_commands_file()
     return false
   end
 
-  local handle = io.popen("find . -name " .. config.commands_file_name)
+  local handle = io.popen("find -maxdepth 3 . -name " .. config.commands_file_name)
   if handle == nil then
     return false
   end

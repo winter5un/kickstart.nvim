@@ -935,6 +935,16 @@ require('lazy').setup({
         })
       end, { desc = '[S]earch [B]ash aliases in New Window' })
 
+      vim.keymap.set('n', '<leader>sv', function()
+        vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
+        vim.cmd [[execute 'wincmd l']]
+        vim.cmd [[edit ~/.bashrc]]
+        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+          winblend = 10,
+          previewer = false,
+        })
+      end, { desc = '[S]earch [B]ash aliases in New Window' })
+
       vim.keymap.set('n', '<leader>st', function()
         vim.cmd [[execute 'wincmd v']] --<c-w>v<c-w>l"'
         vim.cmd [[execute 'wincmd l']]
@@ -1109,7 +1119,6 @@ require('lazy').setup({
         pyright = {},
         rust_analyzer = {},
         gdscript = {
-          
           filetypes = { 'gd' },
         },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -1184,6 +1193,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        gdscript = {'gdformat'},
         -- Conform can also run multiple formatters sequentially
         --        python = { 'isort', 'black' },
         -- python = { "isort", "black" },
