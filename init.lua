@@ -229,9 +229,9 @@ vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
 --gUiw to make word uppercase like const -> CONST
 --leader aa to paste from register a
 --leader ya to yank to register a
-vim.keymap.set('n', '<leader>å', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle [N]vim [T]ree' })
-vim.keymap.set('n', 'å', '%', { desc = 'Jump to matching bracket' })
-vim.keymap.set('v', 'å', '%', { desc = 'Jump to matching bracket' })
+vim.keymap.set('n', '<leader>få', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle [N]vim [T]ree' })
+vim.keymap.set('n', '¨', '%', { desc = 'Jump to matching bracket' })
+vim.keymap.set('v', '¨', '%', { desc = 'Jump to matching bracket' })
 vim.keymap.set('n', '<leader>q', '<cmd>wq<CR>', { desc = '[W]rite [Q]uit' })
 vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = '[W]rite ' })
 vim.keymap.set('n', '<leader>fr', '<cmd>!nohup nautilus --browser . & disown<CR>', { desc = '[F]loating Nautilus [R]gui' })
@@ -286,12 +286,14 @@ vim.api.nvim_create_autocmd('BufWritePost', {
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
-if not vim.loop.fs_stat(lazypath) then
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
-  vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+  local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+  if vim.v.shell_error ~= 0 then
+    error('Error cloning lazy.nvim:\n' .. out)
+  end
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
-
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -305,6 +307,7 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
+  rocks = { "hererocks" },
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'tpope/vim-surround', -- Surround text with symbols
   'tpope/vim-fugitive',
@@ -348,7 +351,7 @@ require('lazy').setup({
   {'tpope/vim-obsession'},
   {
   "folke/flash.nvim",
-  event = "VeryLazy",
+  event = "BufRead",
   ---@type Flash.Config
   opts = {},
   -- stylua: ignore
@@ -362,12 +365,8 @@ require('lazy').setup({
   },
   {
     "christoomey/vim-tmux-navigator",
+    lazy = false,
     opts = {},
-    config = function()
-      require('tmux_navigator').setup {
-        disable_when_zoomed = true,
-      }
-    end,
     cmd = {
       "TmuxNavigateLeft",
       "TmuxNavigateDown",
@@ -450,7 +449,7 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
       'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
       'MunifTanjim/nui.nvim',
-      '3rd/image.nvim', -- Optional image support in preview window: See `# Preview Mode` for more information
+      'vhyrro/luarocks.nvim',
     },
     opts = {
       config = function()
@@ -680,14 +679,20 @@ require('lazy').setup({
     'voldikss/vim-floaterm',
 
     keys = {
-      { '<leader>ft', '<cmd>FloatermNew<cr>', desc = 'New floating terminal instance' },
+      { '<leader>fc', '<cmd>FloatermNew<cr>', desc = 'New floating terminal instance' },
       { '<leader>ff', '<cmd>FloatermToggle<cr>', desc = 'Toggle floating terminal instance' },
+      { 'å', '<cmd>FloatermToggle<cr>', noremap=true, mode = {"n","c", "!", "t"},desc = 'Toggle floating terminal instance' },
+      { '<F4>', '<cmd>FloatermToggle<cr>', mode = {"n", "c", "!", "t"}, noremap=true, desc = 'Toggle floating terminal instance' },
       { '<leader>fn', '<cmd>FloatermNext<cr>', desc = 'Next floating terminal instance' },
       { '<leader>fm', '<cmd>FloatermPrev<cr>', desc = 'Previous floating terminal instance' },
-      { '<leader>fk', '<cmd>FloatermKill<cr>', desc = 'Kill floating terminal instance' },
+      { '<leader>fx', '<cmd>FloatermKill<cr>', desc = 'Kill floating terminal instance' },
       { '<leader>fd', '<cmd>Telescope floaterm<cr>', desc = 'Show floating terminal instance' },
     },
-    --config = function() end,
+    setup = {
+        floaterm_height = 0.8,
+        floaterm_width = 0.8,
+        floaterm_position = 'top',
+      }
   },
   {
     'rbong/vim-flog',
@@ -734,12 +739,12 @@ require('lazy').setup({
   --  config = function() ... end
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    event = 'VeryLazy', -- Sets the loading event to 'VimEnter'
     config = function() -- This is the function that runs, AFTER loading
       require('which-key').setup()
 
       -- Document existing key chains
-      require('which-key').register {
+      require('which-key').add {
         ['<leader>c'] = { name = '[C]o-Pilot and [Copy] commands', _ = 'which_key_ignore' },
         ['<leader>b'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]eplace', _ = 'which_key_ignore' },
@@ -846,6 +851,8 @@ require('lazy').setup({
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
+      local actions = require 'telescope.actions'
+      local action_state = require 'telescope.actions.state'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
@@ -860,6 +867,12 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', 'gj', builtin.jumplist, { desc = '[G]oto [J]umplist' })
       vim.keymap.set('n', '<leader>sj', '<C-w>v<C-w>l:Telescope jumplist<CR>', { noremap = true, silent = true, desc = '[S]earch [J]umplist in new Split' })
+
+      vim.keymap.set('i', '<c-d>', function ()
+        local buffnum action_state.get_selected_entry()
+        actions.delete_buffer(buffnum)
+      end,
+        { desc = '[D]elete [S]elected Buffer' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>ä', function()
@@ -1083,7 +1096,7 @@ require('lazy').setup({
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.server_capabilities.documentHighlightProvider then
+          if client and client.server_capabilities.documentHighlightProvider and client.supports_method('textDocument/documentHighlight') then
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               callback = vim.lsp.buf.document_highlight,
@@ -1116,7 +1129,7 @@ require('lazy').setup({
       local servers = {
         clangd = {},
        --gopls = {},
-        pyright = {},
+        pyright = {'py'},
         rust_analyzer = {},
         gdscript = {
           filetypes = { 'gd' },
@@ -1404,18 +1417,20 @@ require('lazy').setup({
     end,
   },
   {
-    dir = "/home/nicholasmabe/.config/nvim/lua/projcom/init.lua",
+    dir = "/home/nicholasmabe/.config/nvim/lua/projcom",
     name = "projcom",
     dependencies = {
       'ThePrimeagen/harpoon',
     },
-    config = function ()
-      local projcom = require('projcom')
-      projcom.setup({
-        debug = false,
-      })
-
-    end
+    opts = {
+      debug = false,
+    },
+    -- config = function ()
+    --   local projcom = require('projcom')
+    --   projcom.setup({
+    --     debug = false,
+      -- })
+    -- end
   },
 
 
