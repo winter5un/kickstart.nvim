@@ -1425,12 +1425,12 @@ require('lazy').setup({
     opts = {
       debug = false,
     },
-    -- config = function ()
-    --   local projcom = require('projcom')
-    --   projcom.setup({
-    --     debug = false,
-      -- })
-    -- end
+    config = function ()
+      local projcom = require('projcom')
+      projcom.setup({
+        debug = false,
+      })
+    end
   },
 
 
